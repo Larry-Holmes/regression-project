@@ -4,6 +4,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, explained_variance_score
 from sklearn.metrics import r2_score
 from sklearn.feature_selection import SelectKBest, f_regression
+from sklearn.feature_selection import RFE
 from sklearn.linear_model import LinearRegression, TweedieRegressor, LassoLars
 from sklearn.preprocessing import PolynomialFeatures
 
@@ -83,6 +84,24 @@ def better_than_baseline(y, yhat):
         return True
     else:
         return False
+    
+def select_kbest(X, y, K):
+    
+    kbest = SelectKBest(f_regression, k=K)
+
+    kbest.fit(X, y)
+    
+    return X.columns[kbest.get_support()]
+
+def rfe(X, y, K):
+    
+    model = LinearRegression()
+    
+    rfe = RFE(model, n_features_to_select=K)
+
+    rfe.fit(X, y)
+
+    return pd.DataFrame({'rfe_ranking':rfe.ranking_}, index = X.columns)
     
 
 def model_metrics(model, 

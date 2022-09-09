@@ -21,7 +21,7 @@ def new_zillow_data():
     '''
     sql_query = """
                 SELECT 
-                parcelid as lot_id, roomcnt as total_rooms, bedroomcnt as bedrooms, bathroomcnt as bathrooms, garagecarcnt as garages, poolcnt as pools,
+                bedroomcnt as bedrooms, bathroomcnt as bathrooms, garagecarcnt as garages, poolcnt as pools,
                 calculatedfinishedsquarefeet as area, lotsizesquarefeet as lot_size, fips, regionidcounty as county, regionidcity as city, regionidzip as zip, 
                 yearbuilt, taxvaluedollarcnt as tax_value
                 From predictions_2017 
@@ -146,6 +146,10 @@ def prepare_zillow(df, target, col_list):
     # remove all outliers from dataset
     df = remove_outliers(df, 1.5, col_list)
     
+    #remove nulls
+    values = {'garages':2.0, 'pools':0}
+    df = df.fillna(value=values)
+    
     # get distributions of numeric data
     get_hist(df)
     get_box(df)
@@ -185,9 +189,6 @@ def prepare_zillow(df, target, col_list):
     # split test into X (dataframe, drop target) & y (series, keep target only)
     X_test = test_scaled.drop(columns=[target])
     y_test = test_scaled[target]
-    
-    #remove nulls
-    df = df.dropna()
     
     return train, validate, test, X_train, y_train, X_validate, y_validate, X_test, y_test
 
