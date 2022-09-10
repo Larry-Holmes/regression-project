@@ -44,6 +44,8 @@
 |county     |County in which the property is located|
 |city       |City in which the property is located|
 |zip        |Zip code in which the property is located|
+|lat        |Latitude of the middle of the home|
+|lon        |Longitude of the middle of the home|
 |yearbuilt  |The Year the principal residence was built|
 
 ## Initial Hypotheses

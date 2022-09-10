@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler 
 import os
 from env import host, username, password
 
@@ -21,8 +21,8 @@ def new_zillow_data():
     '''
     sql_query = """
                 SELECT 
-                bedroomcnt as bedrooms, bathroomcnt as bathrooms, garagecarcnt as garages, poolcnt as pools,
-                calculatedfinishedsquarefeet as area, lotsizesquarefeet as lot_size, fips, regionidcounty as county, regionidcity as city, regionidzip as zip, 
+                bedroomcnt as bedrooms, bathroomcnt as bathrooms, garagecarcnt as garages, poolcnt as pools, calculatedfinishedsquarefeet as area,
+                lotsizesquarefeet as lot_size, fips, regionidcounty as county, regionidcity as city, regionidzip as zip,
                 yearbuilt, taxvaluedollarcnt as tax_value
                 From predictions_2017 
                 JOIN properties_2017 USING (parcelid)
@@ -150,6 +150,10 @@ def prepare_zillow(df, target, col_list):
     values = {'garages':2.0, 'pools':0}
     df = df.fillna(value=values)
     
+    #cleanup and change yearbuilt
+    # df['yearbuilt'] = df.yearbuilt.apply(check_decade)
+    # df = df.rename(columns={'yearbuilt':'decade'})
+    
     # get distributions of numeric data
     get_hist(df)
     get_box(df)
@@ -162,33 +166,22 @@ def prepare_zillow(df, target, col_list):
     validate_scaled = validate.copy()
     test_scaled = test.copy()
     
-    columns_to_scale = col_list
+    X_train = train.drop(columns=[target])
+    y_train = train[target]
     
-    #     make the thing
+    X_validate = validate.drop(columns=[target])
+    y_validate = validate[target]
+    
+    X_test = test.drop(columns=[target])
+    y_test = test[target]
+    
     scaler = MinMaxScaler()
-    #     fit the thing
-    scaler.fit(train[columns_to_scale])
-    # applying the scaler:
-    train_scaled[columns_to_scale] = pd.DataFrame(scaler.transform(train[columns_to_scale]),
-                                                  columns=train[columns_to_scale].columns.values).set_index([train.index.values])
-                                                  
-    validate_scaled[columns_to_scale] = pd.DataFrame(scaler.transform(validate[columns_to_scale]),
-                                                  columns=validate[columns_to_scale].columns.values).set_index([validate.index.values])
     
-    test_scaled[columns_to_scale] = pd.DataFrame(scaler.transform(test[columns_to_scale]),
-                                                 columns=test[columns_to_scale].columns.values).set_index([test.index.values])
+    scaler.fit(X_train)
     
-    # split train into X (dataframe, drop target) & y (series, keep target only)
-    X_train = train_scaled.drop(columns=[target])
-    y_train = train_scaled[target]
-
-    # split validate into X (dataframe, drop target) & y (series, keep target only)
-    X_validate = validate_scaled.drop(columns=[target])
-    y_validate = validate_scaled[target]
-
-    # split test into X (dataframe, drop target) & y (series, keep target only)
-    X_test = test_scaled.drop(columns=[target])
-    y_test = test_scaled[target]
+    X_train = pd.DataFrame(scaler.transform(X_train), columns = X_train.columns.values).set_index([X_train.index.values])
+    X_validate = pd.DataFrame(scaler.transform(X_validate), columns = X_validate.columns.values).set_index([X_validate.index.values])
+    X_test = pd.DataFrame(scaler.transform(X_test), columns = X_test.columns.values).set_index([X_test.index.values])
     
     return train, validate, test, X_train, y_train, X_validate, y_validate, X_test, y_test
 
@@ -251,6 +244,52 @@ def scale_data(train,
         return scaler, train_scaled, validate_scaled, test_scaled
     else:
         return train_scaled, validate_scaled, test_scaled
+
+def check_decade(n):
+    if n < 1810:
+        return 1800
+    elif n < 1820:
+        return 1810
+    elif n < 1830:
+        return 1820
+    elif n < 1840:
+        return 1830
+    elif n < 1850:
+        return 1840
+    elif n < 1860:
+        return 1850
+    elif n < 1870:
+        return 1860
+    elif n < 1880:
+        return 1870
+    elif n < 1890:
+        return 1880
+    elif n < 1900:
+        return 1890
+    elif n < 1910:
+        return 1900
+    elif n < 1920:
+        return 1910
+    elif n < 1930:
+        return 1920
+    elif n < 1940:
+        return 1930
+    elif n < 1950:
+        return 1940
+    elif n < 1960:
+        return 1950
+    elif n < 1970:
+        return 1960
+    elif n < 1980:
+        return 1970
+    elif n < 1990:
+        return 1980
+    elif n < 2000:
+        return 1990
+    elif n < 2010:
+        return 2000
+    else:
+        return 2010
     
 def wrangle_grades():
     '''
