@@ -1,13 +1,20 @@
+# basic imports
 import pandas as pd
 import numpy as np
 
+# viz imports
 import matplotlib.pyplot as plt
 import seaborn as sns
+
+# imports for preparing data
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler 
+
+#imports from other user generated files
 import os
 from env import host, username, password
 
+# connects user with Codeup database
 def get_connection(db, user=username, host=host, password=password):
     '''
     This function uses my info from my env file to
@@ -15,6 +22,7 @@ def get_connection(db, user=username, host=host, password=password):
     '''
     return f'mysql+pymysql://{user}:{password}@{host}/{db}'
 
+# acquires data from SQL
 def new_zillow_data():
     '''
     This function reads the zillow data from the Codeup db into a df.
@@ -36,6 +44,7 @@ def new_zillow_data():
     
     return df
 
+# checks for csv file 
 def get_zillow_data():
     '''
     This function reads in zillow data from Codeup database, writes data to
@@ -57,6 +66,7 @@ def get_zillow_data():
     return df
 
 
+# function to mass produce univariate histographs
 def get_hist(df):
     ''' Gets histographs of acquired continuous variables'''
     
@@ -89,7 +99,7 @@ def get_hist(df):
 
     plt.show()
 
-    
+
 def get_box(df):
     ''' Gets boxplots of acquired continuous variables'''
     
@@ -162,10 +172,7 @@ def prepare_zillow(df, target, col_list):
     train_validate, test = train_test_split(df, test_size=.2, random_state=123)
     train, validate = train_test_split(train_validate, test_size=.3, random_state=123)
     
-    train_scaled = train.copy()
-    validate_scaled = validate.copy()
-    test_scaled = test.copy()
-    
+    #Separating the target variable
     X_train = train.drop(columns=[target])
     y_train = train[target]
     
@@ -175,12 +182,17 @@ def prepare_zillow(df, target, col_list):
     X_test = test.drop(columns=[target])
     y_test = test[target]
     
+    # scaling data
+    train_scaled = train.copy()
+    validate_scaled = validate.copy()
+    test_scaled = test.copy()
+    
     scaler = MinMaxScaler()
     
     scaler.fit(X_train)
     
     X_train = pd.DataFrame(scaler.transform(X_train), columns = X_train.columns.values).set_index([X_train.index.values])
-    X_validate = pd.DataFrame(scaler.transform(X_validate), columns = X_validate.columns.values).set_index([X_validate.index.values])
+    X_validate = pd.DataFrame(scaler.transform(X_validate), columns=X_validate.columns.values).set_index([X_validate.index.values])
     X_test = pd.DataFrame(scaler.transform(X_test), columns = X_test.columns.values).set_index([X_test.index.values])
     
     return train, validate, test, X_train, y_train, X_validate, y_validate, X_test, y_test
@@ -245,6 +257,8 @@ def scale_data(train,
     else:
         return train_scaled, validate_scaled, test_scaled
 
+
+# Changes yearbuilt into categorical version of self    
 def check_decade(n):
     if n < 1810:
         return 1800
@@ -291,19 +305,3 @@ def check_decade(n):
     else:
         return 2010
     
-def wrangle_grades():
-    '''
-    Read student_grades csv file into a pandas DataFrame,
-    drop student_id column, replace whitespaces with NaN values,
-    drop any rows with Null values, convert all columns to int64,
-    return cleaned student grades DataFrame.
-    '''
-    # Acquire data from csv file.
-    df = pd.read_csv('student_grades.csv')
-    # Replace white space values with NaN values.
-    df = df.replace(r'^\s*$', np.nan, regex=True)
-    # Drop all rows with NaN values.
-    df = df.dropna()
-    # Convert all columns to int64 data types.
-    df = df.astype('int64')
-    return df
