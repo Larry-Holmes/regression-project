@@ -160,10 +160,6 @@ def prepare_zillow(df, target, col_list):
     values = {'garages':2.0, 'pools':0}
     df = df.fillna(value=values)
     
-    #cleanup and change yearbuilt
-    # df['yearbuilt'] = df.yearbuilt.apply(check_decade)
-    # df = df.rename(columns={'yearbuilt':'decade'})
-    
     # get distributions of numeric data
     get_hist(df)
     get_box(df)
